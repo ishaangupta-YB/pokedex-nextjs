@@ -1,6 +1,7 @@
 "use client";
-import React from 'react';
+import React, { KeyboardEvent } from 'react';
 import Image from 'next/image';
+import { motion } from "framer-motion";  
 import { Badge } from "@/components/ui/badge";  
 import { cn } from "@/lib/utils";  
 import { BackgroundGradient } from "@/components/ui/background-gradient"; // Assuming component is in ui
@@ -15,6 +16,7 @@ interface Pokemon {
 
 interface PokemonCardProps {
     pokemon: Pokemon;
+    onClick?: () => void;
 }
 
 const getTypeColor = (type: string): string => {
@@ -43,39 +45,84 @@ const getTypeColor = (type: string): string => {
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-export function PokemonCard({ pokemon }: PokemonCardProps) {
+export function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
+
+    // Handler for keyboard interaction
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+        // Trigger onClick if Enter or Space is pressed and onClick is defined
+        if (onClick && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault(); // Prevent default space scroll behavior
+            onClick();
+        }
+    };
+
+    // Apply conditional classes and props to the wrapper div
+    const wrapperProps = onClick
+        ? {
+            role: "button" as const,
+            tabIndex: 0,
+            onClick: onClick,
+            onKeyDown: handleKeyDown,
+            'aria-label': `View details for ${pokemon.name}`,
+            className: "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background rounded-[22px] h-full group", // Combine focus styles and existing container styles
+          }
+        : { className: "rounded-[22px] h-full group" }; // Default styles if not clickable
+
+    // Floating animation variants
+    const floatingAnimation = {
+      initial: { y: 0 },
+      animate: {
+        y: [0, -8, 0],
+        transition: {
+          duration: 1,
+          repeat: Infinity,
+          repeatType: "reverse" as const,
+          ease: "easeInOut",
+        },
+      },
+    };
 
     return (
-        <BackgroundGradient 
-            containerClassName="rounded-[22px] h-full group"
-            className="rounded-[22px] p-4 sm:p-6 bg-card dark:bg-zinc-900 shadow-lg group-hover:shadow-xl transition-all duration-300 h-full flex flex-col group-hover:scale-[1.02]"
-        >
-            <div className="flex-grow flex flex-col items-center">
-                <Image
-                    src={pokemon.imageUrl}
-                    alt={pokemon.name}
-                    height={150}
-                    width={150}
-                    className="object-contain mb-4 h-[150px] w-[150px] transition-transform duration-300 group-hover:scale-110"
-                    unoptimized // Necessary for external URLs if loader not configured
-                    priority={pokemon.id <= 20} // Prioritize loading images for the first few Pokémon
-                />
-                <p className="text-xs text-muted-foreground">#{String(pokemon.id).padStart(3, '0')}</p>
-                <p className="text-lg font-bold tracking-tight text-card-foreground capitalize mb-2 text-center truncate w-full">
-                    {pokemon.name}
-                </p>
-            </div>
-            <div className="flex justify-center gap-2 flex-wrap mt-auto pt-2">
-                {pokemon.types.map((type) => (
-                    <Badge
-                        key={type}
-                        className={cn("border text-xs font-medium", getTypeColor(type))}
-                        variant="outline"
+        // Wrapper div takes the event handlers and accessibility props
+        <div {...wrapperProps}>
+            <BackgroundGradient
+                containerClassName="rounded-[22px] h-full"
+                className="rounded-[22px] p-4 sm:p-6 bg-card dark:bg-zinc-900 shadow-lg group-hover:shadow-xl transition-all duration-300 h-full flex flex-col group-hover:scale-[1.02]"
+            >
+                <div className="flex-grow flex flex-col items-center pointer-events-none">
+                    {/* Wrap Image with motion.div for floating animation */}
+                    <motion.div
+                      initial="initial"
+                      animate="animate" 
+                      variants={floatingAnimation}
+                      className="relative w-[150px] h-[150px] mb-4"
                     >
-                        {capitalize(type)}
-                    </Badge>
-                ))}
-            </div>
-        </BackgroundGradient>
+                        <Image
+                            src={pokemon.imageUrl}
+                            alt={pokemon.name}
+                            fill
+                            className="object-contain transition-transform duration-300 group-hover:scale-110"
+                            unoptimized
+                            priority={pokemon.id <= 20}
+                        />
+                    </motion.div>
+                    <p className="text-xs text-muted-foreground">#{String(pokemon.id).padStart(3, '0')}</p>
+                    <p className="text-lg font-bold tracking-tight text-card-foreground capitalize mb-2 text-center truncate w-full">
+                        {pokemon.name}
+                    </p>
+                </div>
+                <div className="flex justify-center gap-2 flex-wrap mt-auto pt-2 pointer-events-none">
+                    {pokemon.types.map((type) => (
+                        <Badge
+                            key={type}
+                            className={cn("border text-xs font-medium", getTypeColor(type))}
+                            variant="outline"
+                        >
+                            {capitalize(type)}
+                        </Badge>
+                    ))}
+                </div>
+            </BackgroundGradient>
+        </div>
     );
 } 

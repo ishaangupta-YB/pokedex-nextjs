@@ -36,7 +36,7 @@ interface CacheEntry {
     timestamp: number;
 }
 const cache: { allPokemon?: CacheEntry } = {};
-const CACHE_DURATION_MS = 60 * 60 * 1000; // 1 hour
+const CACHE_DURATION_MS = 60 * 60 * 1000; 
 
 async function getAllPokemonList(): Promise<PokemonListItem[]> {
     const now = Date.now();

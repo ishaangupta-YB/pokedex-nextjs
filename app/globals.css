@@ -120,3 +120,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Override Progress component indicator background */
+[data-slot="progress-indicator"] {
+  background-color: var(--progress-indicator-color, oklch(var(--primary))); /* Use variable, fallback to primary */
+}
+
+/* Example for dark mode if needed, adjust fallback if necessary */
+.dark [data-slot="progress-indicator"] {
+   background-color: var(--progress-indicator-color, oklch(var(--primary))); /* Dark mode might use same variable or a different fallback */
+}

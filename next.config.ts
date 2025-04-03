@@ -1,10 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  images: {
-    domains: [
-      "api.microlink.io", // Microlink Image Preview
+  images: { 
+    remotePatterns: [
+      {
+        protocol: 'https', 
+        hostname: 'api.microlink.io', 
+        port: '',
+        pathname: '/**', // Keep existing Microlink config
+      },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com',
+        port: '',
+        pathname: '/PokeAPI/sprites/master/sprites/pokemon/**', // Allow PokeAPI sprites
+      },
     ],
   },
 };
