@@ -1,11 +1,26 @@
 "use client"; // Convert to Client Component
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from "next/image";
 import { PokemonCardSkeleton } from "@/components/PokemonCardSkeleton"; // Import Skeleton
 import { PokemonCard } from "@/components/PokemonCard"; // Import PokemonCard
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input"; // Import Search Input
-import debounce from 'lodash.debounce'; // Import debounce
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"; 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select" 
 
 // Define the type for a single Pokémon fetched from our API
 interface Pokemon {
@@ -21,88 +36,94 @@ interface PokemonApiResponse {
   totalCount: number;
 }
 
+// List of Pokémon types for filtering
+const pokemonTypes = [ "normal", "fire", "water", "grass", "electric", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy" ];
+
 export default function Home() {
-  const [pokemonData, setPokemonData] = useState<Pokemon[]>([]);
+  // Store the raw fetched data separately
+  const [allPokemonData, setAllPokemonData] = useState<Pokemon[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  // No need for isSearching state anymore if handled cleanly
+  const [selectedType, setSelectedType] = useState<string>(""); // State for type filter
 
-  // Pagination state
+  // Pagination state - We'll paginate the *filtered* results client-side
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const limit = 20; // Define limit for skeleton count
+  const limit = 20;  
 
-  // Combined fetch function
-  const fetchPokemon = useCallback(async (query: string, page: number) => {
-    console.log(`Fetching page ${page} with query: "${query}"`); // Debug log
-    setIsLoading(true);
-    setError(null);
-    try {
-      const offset = (page - 1) * limit;
-      // *** IMPORTANT: API needs to handle search query server-side for efficiency ***
-      // For now, we ignore the query param in the fetch URL and filter client-side.
-      const fetchUrl = `/api/pokemon?limit=${limit}&offset=${offset}`;
-      const response = await fetch(fetchUrl);
+  // Fetch ALL Pokémon data ONCE on initial load (Inefficient! Needs API update ideally)
+  useEffect(() => {
+    const fetchAllPokemon = async () => {
+      console.log("Fetching initial Pokémon data...");
+      setIsLoading(true);
+      setError(null);
+      try {
+        // *** Fetch a large number - TEMPORARY - Replace with better API/pagination ***
+        const largeLimit = 151; // Fetch first 151 for demo purposes
+        const response = await fetch(`/api/pokemon?limit=${largeLimit}&offset=0`);
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch Pokémon: ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch Pokémon: ${response.statusText}`);
+        }
+        const data: PokemonApiResponse = await response.json();
+        setAllPokemonData(data.pokemon);
+        // setTotalCount(data.totalCount); // Total count from API isn't used for client-side pagination
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setAllPokemonData([]);
+      } finally {
+        setIsLoading(false);
       }
-      const data: PokemonApiResponse = await response.json();
-
-      // Client-side filtering (less efficient for large datasets)
-      const filteredData = query
-        ? data.pokemon.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
-        : data.pokemon;
-
-      setPokemonData(filteredData);
-      setTotalCount(data.totalCount); // Total count from API (may not match filtered results)
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      setPokemonData([]);
-      setTotalCount(0);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [limit]); // Removed debouncedFetchPokemon from dependencies
-
-  // Debounced version specifically for search input changes
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
-      setCurrentPage(1); // Reset to page 1 for new search
-      fetchPokemon(query, 1); // Fetch page 1 with the new query
-    }, 500), // 500ms debounce
-    [fetchPokemon] // Depend on the main fetch function
-  );
-
-  // Effect for initial load and pagination changes
-  useEffect(() => {
-    // Fetch initial data or data for new page
-    fetchPokemon(searchQuery, currentPage);
-  }, [currentPage, fetchPokemon]); // Only run when currentPage or fetchPokemon changes
-
-  // Effect for cleaning up debounce on unmount
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
     };
-  }, [debouncedSearch]);
+    fetchAllPokemon();
+  }, []); // Empty dependency array - fetch only once
+
+  // Filter Pokémon based on search query AND selected type
+  const filteredPokemon = useMemo(() => {
+    let filtered = allPokemonData;
+
+    if (searchQuery) {
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedType) {
+      filtered = filtered.filter(p =>
+        p.types.includes(selectedType.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [allPokemonData, searchQuery, selectedType]);
+
+  // Calculate paginated data from filtered results
+  const paginatedData = useMemo(() => {
+    const offset = (currentPage - 1) * limit;
+    return filteredPokemon.slice(offset, offset + limit);
+  }, [filteredPokemon, currentPage, limit]);
+
+  // Calculate total pages based on filtered results
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredPokemon.length / limit);
+  }, [filteredPokemon, limit]);
 
   // Handler for the search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    debouncedSearch(query); // Trigger the debounced search fetch
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
   };
 
-  // Handler for immediate search on submit (optional)
+  const handleTypeChange = (value: string) => {
+    setSelectedType(value === "all" ? "" : value); // Set to empty string if 'all' is selected
+    setCurrentPage(1); // Reset page when filter changes
+  };
+
+  // No need for separate submit handler if search updates instantly
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    debouncedSearch.cancel(); // Cancel any pending debounce
-    setCurrentPage(1); // Reset to page 1
-    fetchPokemon(searchQuery, 1); // Trigger immediate fetch
-    console.log("Search submitted immediately:", searchQuery);
+    // Optional: Could add focus management or other actions here
+    console.log("Search submitted (instant filter applied):", searchQuery);
   };
 
   // Placeholder values for the input
@@ -114,19 +135,37 @@ export default function Home() {
     "Looking for 'Bulbasaur'?",
   ];
 
-  return (
-    <div>
-      {/* Title removed as it's part of the SearchInput demo style, adjust as needed */}
-      {/* <h1 className="text-3xl font-bold mb-8 text-center tracking-tight">Explore the Pokédex</h1> */}
+  // Handler for pagination change
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top on page change
+    }
+  };
 
-      <div className="mb-8 px-4"> {/* Add padding for search bar */}
-        <PlaceholdersAndVanishInput
+  return (
+    <div className="space-y-8"> {/* Add spacing between elements */}
+      {/* Control Bar: Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-4 px-4 items-center">
+        <div className="flex-grow w-full sm:w-auto"><PlaceholdersAndVanishInput
           placeholders={placeholders}
           onChange={handleSearchChange}
           onSubmit={handleSearchSubmit}
-          // Pass the current searchQuery to the input if it supports a value prop (check component impl)
-          // value={searchQuery} // Example: if the component accepts a value prop
-        />
+        /></div>
+        
+        <Select onValueChange={handleTypeChange} value={selectedType || "all"}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            {pokemonTypes.map(type => (
+              <SelectItem key={type} value={type} className="capitalize">
+                {type}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {error && (
@@ -136,7 +175,8 @@ export default function Home() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      {/* Grid for Pokemon Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4"> {/* Add padding */}
         {isLoading &&
           Array.from({ length: limit }).map((_, index) => (
             <PokemonCardSkeleton key={`skeleton-${index}`} />
@@ -144,12 +184,12 @@ export default function Home() {
 
         {!isLoading && !error && (
           <>
-            {pokemonData.length > 0 ? (
-              pokemonData.map((pokemon) => (
+            {paginatedData.length > 0 ? (
+              paginatedData.map((pokemon) => (
                 <PokemonCard key={pokemon.id} pokemon={pokemon} />
               ))
             ) : (
-              <p className="col-span-full text-center text-muted-foreground">
+              <p className="col-span-full text-center text-muted-foreground py-10"> {/* Add padding */}
                 {searchQuery ? `No Pokémon found matching "${searchQuery}".` : "No Pokémon found."}
               </p>
             )}
@@ -157,7 +197,56 @@ export default function Home() {
         )}
       </div>
 
-      {/* Pagination controls will be added here later */}
+      {/* Pagination Controls */}
+      {!isLoading && !error && totalPages > 1 && (
+        <div className="flex justify-center pt-4 pb-8"> {/* Added padding bottom */}
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); handlePageChange(currentPage - 1); }}
+                  className={currentPage === 1 ? "pointer-events-none text-muted-foreground opacity-50" : undefined}
+                  aria-disabled={currentPage === 1}
+                />
+              </PaginationItem>
+              
+              {/* Basic Page Number Logic (Needs improvement for many pages) */}
+              {[...Array(totalPages)].map((_, i) => {
+                 const pageNum = i + 1;
+                 // Simple logic: Show first, last, current, and adjacent pages
+                 // More complex logic needed for large number of pages with ellipsis
+                 if (pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - currentPage) <= 1) {
+                    return (
+                       <PaginationItem key={pageNum}>
+                         <PaginationLink
+                           href="#"
+                           onClick={(e) => { e.preventDefault(); handlePageChange(pageNum); }}
+                           isActive={currentPage === pageNum}
+                         >
+                           {pageNum}
+                         </PaginationLink>
+                       </PaginationItem>
+                    );
+                 } else if (Math.abs(pageNum - currentPage) === 2) {
+                    // Show ellipsis if pages are skipped
+                    return <PaginationItem key={`ellipsis-${pageNum}`}><PaginationEllipsis /></PaginationItem>;
+                 } 
+                 return null;
+              })}
+
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); handlePageChange(currentPage + 1); }}
+                  className={currentPage === totalPages ? "pointer-events-none text-muted-foreground opacity-50" : undefined}
+                  aria-disabled={currentPage === totalPages}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 }

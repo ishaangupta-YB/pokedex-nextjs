@@ -1,12 +1,11 @@
 "use client";
 import React from 'react';
 import Image from 'next/image';
-import { Badge } from "@/components/ui/badge"; // Corrected import path for shadcn badge
-import { cn } from "@/lib/utils"; // For conditional classes
+import { Badge } from "@/components/ui/badge";  
+import { cn } from "@/lib/utils";  
 import { BackgroundGradient } from "@/components/ui/background-gradient"; // Assuming component is in ui
 
 
-// Type definition matching the data structure from page.tsx
 interface Pokemon {
     id: number;
     name: string;
@@ -18,7 +17,6 @@ interface PokemonCardProps {
     pokemon: Pokemon;
 }
 
-// Helper to get Tailwind colors for Pokémon types
 const getTypeColor = (type: string): string => {
     switch (type.toLowerCase()) {
         case 'grass': return 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30';
@@ -43,12 +41,9 @@ const getTypeColor = (type: string): string => {
     }
 };
 
-// Capitalize first letter utility
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function PokemonCard({ pokemon }: PokemonCardProps) {
-    // Now BackgroundGradient is imported directly
-    // const CardContainer = BackgroundGradient ? BackgroundGradient : ({ className, children }: { className?: string, children: React.ReactNode }) => <div className={cn("rounded-[22px] p-4 sm:p-6 bg-white dark:bg-zinc-900", className)}>{children}</div>;
 
     return (
         <BackgroundGradient 
@@ -81,8 +76,6 @@ export function PokemonCard({ pokemon }: PokemonCardProps) {
                     </Badge>
                 ))}
             </div>
-            {/* Remove placeholder comment as BackgroundGradient is now implemented */}
-            {/* {!BackgroundGradient && <p className="text-xs text-center text-muted-foreground mt-2">(BackgroundGradient needs setup)</p>} */}
         </BackgroundGradient>
     );
 } 
