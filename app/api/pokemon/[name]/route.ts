@@ -6,13 +6,7 @@ interface PokemonStat {
     name: string;
   };
 }
-
-interface PokemonAbility {
-  ability: {
-    name: string;
-  };
-  is_hidden: boolean;
-}
+ 
 
 interface PokemonType {
   slot: number;
