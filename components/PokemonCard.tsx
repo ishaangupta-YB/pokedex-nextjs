@@ -19,25 +19,25 @@ interface PokemonCardProps {
 
 const getTypeColor = (type: string): string => {
     switch (type.toLowerCase()) {
-        case 'grass': return 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30';
-        case 'fire': return 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30';
-        case 'water': return 'bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30';
-        case 'bug': return 'bg-lime-500/20 text-lime-700 dark:text-lime-400 border-lime-500/30';
-        case 'normal': return 'bg-gray-500/20 text-gray-700 dark:text-gray-400 border-gray-500/30';
-        case 'poison': return 'bg-purple-500/20 text-purple-700 dark:text-purple-400 border-purple-500/30';
-        case 'electric': return 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-500/30';
-        case 'ground': return 'bg-amber-700/20 text-amber-800 dark:text-amber-500 border-amber-700/30';
-        case 'fairy': return 'bg-pink-500/20 text-pink-700 dark:text-pink-400 border-pink-500/30';
-        case 'fighting': return 'bg-orange-700/20 text-orange-800 dark:text-orange-500 border-orange-700/30';
-        case 'psychic': return 'bg-fuchsia-500/20 text-fuchsia-700 dark:text-fuchsia-400 border-fuchsia-500/30';
-        case 'rock': return 'bg-stone-500/20 text-stone-700 dark:text-stone-400 border-stone-500/30';
-        case 'ghost': return 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border-indigo-500/30';
-        case 'ice': return 'bg-cyan-500/20 text-cyan-700 dark:text-cyan-400 border-cyan-500/30';
-        case 'dragon': return 'bg-teal-500/20 text-teal-700 dark:text-teal-400 border-teal-500/30';
-        case 'dark': return 'bg-neutral-700/20 text-neutral-800 dark:text-neutral-400 border-neutral-700/30';
-        case 'steel': return 'bg-slate-500/20 text-slate-700 dark:text-slate-400 border-slate-500/30';
-        case 'flying': return 'bg-sky-500/20 text-sky-700 dark:text-sky-400 border-sky-500/30';
-        default: return 'bg-gray-500/20 text-gray-700 dark:text-gray-400 border-gray-500/30';
+        case 'grass': return 'bg-green-500/15 text-green-700 dark:bg-green-500/25 dark:text-green-300 border-green-500/30';
+        case 'fire': return 'bg-red-500/15 text-red-700 dark:bg-red-500/25 dark:text-red-300 border-red-500/30';
+        case 'water': return 'bg-blue-500/15 text-blue-700 dark:bg-blue-500/25 dark:text-blue-300 border-blue-500/30';
+        case 'bug': return 'bg-lime-500/15 text-lime-700 dark:bg-lime-500/25 dark:text-lime-300 border-lime-500/30';
+        case 'normal': return 'bg-gray-500/15 text-gray-700 dark:bg-gray-500/25 dark:text-gray-300 border-gray-500/30';
+        case 'poison': return 'bg-purple-500/15 text-purple-700 dark:bg-purple-500/25 dark:text-purple-300 border-purple-500/30';
+        case 'electric': return 'bg-yellow-500/15 text-yellow-700 dark:bg-yellow-500/25 dark:text-yellow-300 border-yellow-500/30';
+        case 'ground': return 'bg-amber-700/15 text-amber-800 dark:bg-amber-600/25 dark:text-amber-300 border-amber-700/30';
+        case 'fairy': return 'bg-pink-500/15 text-pink-700 dark:bg-pink-500/25 dark:text-pink-300 border-pink-500/30';
+        case 'fighting': return 'bg-orange-700/15 text-orange-800 dark:bg-orange-600/25 dark:text-orange-300 border-orange-700/30';
+        case 'psychic': return 'bg-fuchsia-500/15 text-fuchsia-700 dark:bg-fuchsia-500/25 dark:text-fuchsia-300 border-fuchsia-500/30';
+        case 'rock': return 'bg-stone-500/15 text-stone-700 dark:bg-stone-500/25 dark:text-stone-300 border-stone-500/30';
+        case 'ghost': return 'bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/25 dark:text-indigo-300 border-indigo-500/30';
+        case 'ice': return 'bg-cyan-500/15 text-cyan-700 dark:bg-cyan-500/25 dark:text-cyan-300 border-cyan-500/30';
+        case 'dragon': return 'bg-teal-500/15 text-teal-700 dark:bg-teal-500/25 dark:text-teal-300 border-teal-500/30';
+        case 'dark': return 'bg-neutral-700/15 text-neutral-800 dark:bg-neutral-600/25 dark:text-neutral-300 border-neutral-700/30';
+        case 'steel': return 'bg-slate-500/15 text-slate-700 dark:bg-slate-500/25 dark:text-slate-300 border-slate-500/30';
+        case 'flying': return 'bg-sky-500/15 text-sky-700 dark:bg-sky-500/25 dark:text-sky-300 border-sky-500/30';
+        default: return 'bg-gray-500/15 text-gray-700 dark:bg-gray-500/25 dark:text-gray-300 border-gray-500/30';
     }
 };
 
